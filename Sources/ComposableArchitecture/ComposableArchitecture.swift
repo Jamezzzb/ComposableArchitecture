@@ -23,12 +23,12 @@ public final class Store<Value, Action>: ObservableObject {
     
     public func view<LocalValue, LocalAction>(
         value: @escaping (Value) -> LocalValue,
-        action: CasePath<Action, LocalAction>
+        action: CaseKeyPath<Action, LocalAction>
     ) -> Store<LocalValue, LocalAction> {
         let localStore = Store<LocalValue, LocalAction>(
             initialValue: value(self.value),
             reducer: { localValue, localAction in
-                self.send(action.embed(localAction))
+              self.send(Action.cases[keyPath: action].embed(localAction))
                 localValue = value(self.value)
                 return []
             }
@@ -48,18 +48,18 @@ public func pullback<
 >(
     _ reducer: @escaping Reducer<LocalValue, LocalAction>,
     value: WritableKeyPath<GlobalValue, LocalValue>,
-    action: CasePath<GlobalAction, LocalAction>
+    action: CaseKeyPath<GlobalAction, LocalAction>
 ) -> Reducer<GlobalValue, GlobalAction> {
     return { globalValue, globalAction in
-        guard let localAction = action.extract(globalAction) 
-        else { 
+      guard let localAction = GlobalAction.cases[keyPath: action].extract(globalAction)
+        else {
             return []
         }
         return reducer(
             &globalValue[keyPath: value],
             localAction
         )
-        .map { effect in { action.embed(effect()) } }
+        .map { effect in { GlobalAction.cases[keyPath: action].embed(effect()) } }
     }
 }
 
