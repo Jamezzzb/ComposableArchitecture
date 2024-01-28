@@ -1,2 +1,2 @@
 # ComposableArchitecture
-Learning Composable Architecture from Point Free Co! 
+Learning Composable Architecture
